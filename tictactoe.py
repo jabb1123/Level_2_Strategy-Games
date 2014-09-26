@@ -83,7 +83,7 @@ def possible_moves (board):
 
 
 def utility (board):
-    # fix me
+
     return 0
 
 def min_value (board):
@@ -95,7 +95,9 @@ def max_value (board):
     return 0
 
 def best_move (board,player):
-    # fix me
+    for i in len(possible_moves(board)):
+    	best_move(make_move(board,possible_moves(board)[i],player),possible_moves(board))
+    if 
     return possible_moves(board)[0]
 
 

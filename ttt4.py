@@ -17,8 +17,12 @@ def fail (msg):
 
 
 def create_board (str):
-    # FIX ME
-    #
+
+    for i in range (4):
+        for j in range (4):
+            broad[(i,j)] = str[i+j]
+    
+
     # Take a description of the board as input and create the board
     #  in your representation
     #
@@ -27,7 +31,7 @@ def create_board (str):
     # It is allowed to pass in a string describing a board
     #   that would never arise in legal play starting from an empty
     #   board
-    return None
+    return board
 
 def has_mark (board,x,y):
     # FIX ME
