@@ -95,10 +95,30 @@ def max_value (board):
     return 0
 
 def best_move (board,player):
-    for i in len(possible_moves(board)):
-    	best_move(make_move(board,possible_moves(board)[i],player),possible_moves(board))
-    if 
-    return possible_moves(board)[0]
+    value = {}
+    if player == 'X':
+        for i in possible_moves(board):
+            new_board = make_move(board,i,'O')
+            if done(board) == 'X':
+                value[i] = -1
+            elif done(board) == 'O':
+                value[i] = 1
+            elif done(board) == False:
+                value[i] = 0
+            else:
+                best_move(new_board,'O')
+    else:
+        for i in possible_moves(board):
+            new_board = make_move(board,i,'X')
+            if done(board) == 'X':
+                value[i] = -1
+            elif done(board) == 'O':
+                value[i] = 1
+            elif done(board) == False:
+                value[i] = 0
+            else:
+                best_move(new_board,'X')
+        return possible_moves(board)[0]
 
 
 def main (): 
@@ -108,12 +128,12 @@ def main ():
 
     while not done(board):
         move = read_player_input(board)
-        board[move] = 'X'
+        board = make_move(board,move,'X')
         print_board(board)
         if not done(board):
-            move = best_move (board,'O')
-            print 'Computer moves to',move
-            board[move] = 'O'
+            move = best_move(board,'O')
+            print 'Computer moves to' + str(move)
+            board = make_move(board,move,'O')
             print_board(board)
 
     winner = has_win(board)
