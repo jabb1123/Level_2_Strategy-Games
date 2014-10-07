@@ -41,7 +41,7 @@ def create_board (str='................'):
         if i == '.':
             board.append(' ')
         else:
-            board.apppend(i) 
+            board.append(i) 
     return board
     
 
@@ -99,7 +99,7 @@ def print_board (board):
 # Read player input when playing as 'player' (either 'X' or 'O')
 # Return a move (a tuple (x,y) with each position between 1 and 4)
 
-def read_player_input (board):
+def read_player_input (board,player):
     valid = [ i for (i,e) in enumerate(board) if e == ' ']
     while True:
         move = raw_input('Position (0-15)? ')
@@ -170,11 +170,13 @@ def run (str,player,playX,playO):
     print_board(board)
     while not done(board):
         if player == 'X':
-            move = playX(board)
+            move = playX(board,player)
         elif player == 'O':
             move = playO(board,player)
         else:
             fail('Unrecognized player '+player)
+        if type(move) == tuple:
+            move = move[1]
         board = make_move(board,move,player)
         print_board(board)
         player = other(player)
