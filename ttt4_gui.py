@@ -10,6 +10,9 @@
 #
 
 import sys
+from graphics import *
+
+GRIDSIZE = 150
 
 def fail (msg):
     raise StandardError(msg)
@@ -157,9 +160,34 @@ def other (player):
         return 'O'
     return 'X'
 
+def gui_init (board):
+    window = GraphWin('Tic-Tac-Toe 4x4', GRIDSIZE*4, GRIDSIZE*4)
+    for i in range(1,4):
+        Line(Point(0,GRIDSIZE*i),Point(GRIDSIZE*4,GRIDSIZE*i)).draw(window)
+        Line(Point(GRIDSIZE*i,0),Point(GRIDSIZE*i,GRIDSIZE*4)).draw(window)
+    window.setBackground('white')
+    return window
+
+def draw_board (board, window):
+    for i in range(4):
+        for k in range(4):
+            if board[i*4+k] == ' ':
+                continue
+            elif board[i*4+k] == 'X':
+                X = Text(Point(GRIDSIZE/2+k*GRIDSIZE,GRIDSIZE/2+i*GRIDSIZE),board[i*4+k])
+                X.setSize(36)
+                X.setTextColor('blue')
+                X.draw(window)
+            else:
+                O = Text(Point(GRIDSIZE/2+k*GRIDSIZE,GRIDSIZE/2+i*GRIDSIZE),board[i*4+k])
+                O.setSize(36)
+                O.setTextColor('red')
+                O.draw(window)
 def run (str,player,playX,playO): 
 
     board = create_board(str)
+    window = gui_init(board)
+    draw_board(board,window)
     print_board(board)
     while not done(board):
         if player == 'X': 
@@ -171,6 +199,7 @@ def run (str,player,playX,playO):
         if type(move) == tuple:
             move = move[1]
         board = make_move(board,move,player)
+        draw_board(board, window)
         print_board(board)
         player = other(player)
 
