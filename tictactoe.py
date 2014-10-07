@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# 
 
+from sys import *
 
 # simple game of tic-tac-toe
 
@@ -49,8 +49,14 @@ def has_win (board):
 
 
 def print_board (board):
-    for i in range(0,3):
-        print '  ',board[i*3],board[i*3+1],board[i*3+2]
+    for i in range(3):
+        for k in range(3):
+            stdout.write('  ')
+            if board[i*3+k] == ' ':
+                stdout.write('.')
+            else:
+                stdout.write(board[i*3+k])
+        print ''
     print
 
 
@@ -94,31 +100,40 @@ def max_value (board):
     # fix me
     return 0
 
+#best_move returns a tuple of (value,best_move)
 def best_move (board,player):
-    value = {}
-    if player == 'X':
+    bestMove = []
+    if player == 'O':
         for i in possible_moves(board):
             new_board = make_move(board,i,'O')
-            if done(board) == 'X':
-                value[i] = -1
-            elif done(board) == 'O':
-                value[i] = 1
-            elif done(board) == False:
-                value[i] = 0
+            if done(new_board) == 'O':
+                return (1,i)
+            elif done(new_board) == True:
+                bestMove.insert(0,(0,i))                
             else:
-                best_move(new_board,'O')
+                next = best_move(new_board,'X')
+                if next[0] == -1:
+                    return (1,i)
+                elif next[0] == 1:
+                    bestMove.append((-1,i))
+                else:
+                    bestMove.insert(0,(0,i))
     else:
         for i in possible_moves(board):
             new_board = make_move(board,i,'X')
-            if done(board) == 'X':
-                value[i] = -1
-            elif done(board) == 'O':
-                value[i] = 1
-            elif done(board) == False:
-                value[i] = 0
+            if done(new_board) == 'X':
+                return (1,i)
+            elif done(new_board) == True:
+                bestMove.insert(0,(0,i))
             else:
-                best_move(new_board,'X')
-        return possible_moves(board)[0]
+                next = best_move(new_board,'O')
+                if next[0] == -1:
+                    return (1,i)
+                elif next[0] == 1:
+                    bestMove.append((-1,i))
+                else:
+                    bestMove.insert(0,(0,i))
+    return bestMove[0]
 
 
 def main (): 
@@ -131,8 +146,8 @@ def main ():
         board = make_move(board,move,'X')
         print_board(board)
         if not done(board):
-            move = best_move(board,'O')
-            print 'Computer moves to' + str(move)
+            move = best_move(board,'O')[1]
+            print 'Computer moves to ' + str(move)
             board = make_move(board,move,'O')
             print_board(board)
 
