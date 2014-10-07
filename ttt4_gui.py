@@ -98,7 +98,7 @@ def print_board (board):
 # Read player input when playing as 'player' (either 'X' or 'O')
 # Return a move (a tuple (x,y) with each position between 1 and 4)
 
-def read_player_input (board,player):
+def read_player_input (board,player,window):
     valid = [ i for (i,e) in enumerate(board) if e == ' ']
     while True:
         move = raw_input('Position (0-15)? ')
@@ -121,7 +121,7 @@ def possible_moves (board):
 # Return the selected move (a tuple (x,y) with each position between 
 #   1 and 4)
 
-def computer_move (board,player):
+def computer_move (board,player,window):
     bestMove = []
     if player == 'O':
         for i in possible_moves(board):
@@ -131,7 +131,7 @@ def computer_move (board,player):
             elif done(new_board) == True:
                 bestMove.insert(0,(0,i))                
             else:
-                next = computer_move(new_board,'X')
+                next = computer_move(new_board,'X',window)
                 if next[0] == -1:
                     return (1,i)
                 elif next[0] == 1:
@@ -146,7 +146,7 @@ def computer_move (board,player):
             elif done(new_board) == True:
                 bestMove.insert(0,(0,i))
             else:
-                next = computer_move(new_board,'O')
+                next = computer_move(new_board,'O',window)
                 if next[0] == -1:
                     return (1,i)
                 elif next[0] == 1:
@@ -183,6 +183,27 @@ def draw_board (board, window):
                 O.setSize(36)
                 O.setTextColor('red')
                 O.draw(window)
+
+def wait_player_input (board,player,window):
+    while True:
+        valid = [ i for (i,e) in enumerate(board) if e == ' ']
+        mouse = window.getMouse()
+        move = mouse.getY()/GRIDSIZE*4 + mouse.getX()/GRIDSIZE
+        if move in valid:
+            return move
+
+def ending(winner,window):
+    if winner != False:
+        text = Text(Point(GRIDSIZE*2,GRIDSIZE*2), winner + ' has won the game!\n Press anywhere to exit.')
+    else:
+        text = Text(Point(GRIDSIZE*2,GRIDSIZE*2), 'It\'s a draw game!\n Press anywhere to exit.')
+    text.setSize(36)
+    text.setStyle('bold')
+    text.draw(window)
+    mouse = window.getMouse()
+    window.close()
+
+
 def run (str,player,playX,playO): 
 
     board = create_board(str)
@@ -191,9 +212,9 @@ def run (str,player,playX,playO):
     print_board(board)
     while not done(board):
         if player == 'X': 
-            move = playX(board,player)
+            move = playX(board,player,window)
         elif player == 'O':
-            move = playO(board,player)
+            move = playO(board,player,window)
         else:
             fail('Unrecognized player '+player)
         if type(move) == tuple:
@@ -205,16 +226,22 @@ def run (str,player,playX,playO):
 
     winner = has_win(board)
     if winner:
+        ending(winner,window)
         print winner,'wins!'
     else:
+        ending(winner,window)
         print 'Draw'
         
 def main ():
     run('.' * 16, 'X', read_player_input, computer_move)
 
 
+# read_player_input allows you to play the console I/O version of the game
+# wait_player_input lets you play the GUI version of the game
+# please comment out line to turn off GUI
 PLAYER_MAP = {
-    'human': read_player_input,
+    #'human': read_player_input,
+    'human': wait_player_input,
     'computer': computer_move
 }
 
@@ -222,7 +249,7 @@ if __name__ == '__main__':
     try:
         str = sys.argv[1] if len(sys.argv)>1 else '.' * 16
         player = sys.argv[2] if len(sys.argv)>3 else 'X'
-        playX = PLAYER_MAP[sys.argv[3]] if len(sys.argv)>3 else read_player_input
+        playX = PLAYER_MAP[sys.argv[3]] if len(sys.argv)>3 else wait_player_input
         playO = PLAYER_MAP[sys.argv[4]] if len(sys.argv)>4 else computer_move
     except:
         print 'Usage: %s [starting board] [X|O] [human|computer] [human|computer]' % (sys.argv[0])
