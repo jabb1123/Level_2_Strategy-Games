@@ -35,8 +35,14 @@ MARK_VALUE = {
 }
 
 
-def create_board (str):
-    return [' '] * 16
+def create_board (str='................'):
+    board = []
+    for i in str:
+        if i == '.':
+            board.append(' ')
+        else:
+            board.apppend(i) 
+    return board
     
 
     # Take a description of the board as input and create the board
@@ -85,33 +91,72 @@ def print_board (board):
             if board[i*4+k] == ' ':
                 sys.stdout.write('.')
             else:
-                print 'type',type(board)
                 sys.stdout.write(board[i*4+k])
         print ''
     print
 
 
-def read_player_input (board, player):
-    # FIX ME
-    #
-    # Read player input when playing as 'player' (either 'X' or 'O')
-    # Return a move (a tuple (x,y) with each position between 1 and 4)
-    return None
+# Read player input when playing as 'player' (either 'X' or 'O')
+# Return a move (a tuple (x,y) with each position between 1 and 4)
+
+def read_player_input (board):
+    valid = [ i for (i,e) in enumerate(board) if e == ' ']
+    while True:
+        move = raw_input('Position (0-15)? ')
+        if move == 'q':
+            exit(0)
+        if len(move)>0 and int(move) in valid:
+            return int(move)
 
 def make_move (board,move,mark):
     new_board = board[:]
     new_board[move] = mark
     return new_board
 
-def computer_move (board,player):
-    # FIX ME
-    #
-    # Select a move for the computer, when playing as 'player' (either 
-    #   'X' or 'O')
-    # Return the selected move (a tuple (x,y) with each position between 
-    #   1 and 4)
-    return None
+# return list of possible moves in a given board
+def possible_moves (board):
+    return [i for (i,e) in enumerate(board) if e == ' ']
 
+
+    
+# Select a move for the computer, when playing as 'player' (either 
+#   'X' or 'O')
+# Return the selected move (a tuple (x,y) with each position between 
+#   1 and 4)
+
+def computer_move (board,player):
+    bestMove = []
+    if player == 'O':
+        for i in possible_moves(board):
+            new_board = make_move(board,i,'O')
+            if done(new_board) == 'O':
+                return (1,i)
+            elif done(new_board) == True:
+                bestMove.insert(0,(0,i))                
+            else:
+                next = computer_move(new_board,'X')
+                if next[0] == -1:
+                    return (1,i)
+                elif next[0] == 1:
+                    bestMove.append((-1,i))
+                else:
+                    bestMove.insert(0,(0,i))
+    else:
+        for i in possible_moves(board):
+            new_board = make_move(board,i,'X')
+            if done(new_board) == 'X':
+                return (1,i)
+            elif done(new_board) == True:
+                bestMove.insert(0,(0,i))
+            else:
+                next = computer_move(new_board,'O')
+                if next[0] == -1:
+                    return (1,i)
+                elif next[0] == 1:
+                    bestMove.append((-1,i))
+                else:
+                    bestMove.insert(0,(0,i))
+    return bestMove[0]
 
 def other (player):
     if player == 'X':
@@ -122,12 +167,10 @@ def other (player):
 def run (str,player,playX,playO): 
 
     board = create_board(str)
-    print('board0',board[0],type(board[0]))
     print_board(board)
-
     while not done(board):
         if player == 'X':
-            move = playX(board,player)
+            move = playX(board)
         elif player == 'O':
             move = playO(board,player)
         else:
