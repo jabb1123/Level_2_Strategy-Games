@@ -87,19 +87,6 @@ def make_move (board,move,mark):
 def possible_moves (board):
     return [i for (i,e) in enumerate(board) if e == ' ']
 
-
-def utility (board):
-
-    return 0
-
-def min_value (board):
-    # fix me 
-    return 0
-
-def max_value (board):
-    # fix me
-    return 0
-
 #best_move returns a tuple of (value,best_move)
 def best_move (board,player):
     bestMove = []
