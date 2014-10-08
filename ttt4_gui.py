@@ -36,6 +36,10 @@ MARK_VALUE = {
     'X': 10
 }
 
+CORNER = {0,3,12,15}
+SIDE = {1,2,4,7,8,11,13,14}
+CENTER = {5,6,9,10}
+
 def create_board (str='................'):
     board = []
     for i in str:
@@ -54,15 +58,18 @@ def create_board (str='................'):
     # It is allowed to pass in a string describing a board
     #   that would never arise in legal play starting from an empty
     #   board
-    return board
-
-def has_mark (board,x,y):
-    # FIX ME
-    #
-    # Take a board representation and checks if there's a mark at
-    #    position x, y (each between 1 and 4)
-    # Return 'X' or 'O' if there is a mark
-    # Return False if there is not
+    # return board
+# Take a board representation and checks if there's a mark at
+#    position x, y (each between 1 and 4)
+# Return 'X' or 'O' if there is a mark
+# Return False if there is not
+def has_mark (board,pos):
+    # if board[pos] == 'O'
+    #     return 'O'
+    # elif board[pos] == 'X'
+    #     return 'X'
+    # else:
+    #     return ' '
     return None
 
 # Check if a board is a win for X or for O.
@@ -115,13 +122,124 @@ def make_move (board,move,mark):
 # return list of possible moves in a given board
 def possible_moves (board):
     return [i for (i,e) in enumerate(board) if e == ' ']
+
+# return list of X positions in a given board
+def xPos (board):
+    return [i for (i,e) in enumerate(board) if e == 'X']
+
+# return list of O positions in a given board
+def oPos (board):
+    return [i for (i,e) in enumerate(board) if e == 'O']
+
+def neighbor (mark):
+    neighbor=[]
+    neighbor.extend([i for i in [mark+4,mark-4] if i >= 0 and i <= 15])
+    neighbor.extend([i for i in [mark+1,mark-1] if i >= 0 and i <= 15 and i/4==mark/4])
+    return neighbor
+
     
 # Select a move for the computer, when playing as 'player' (either 
 #   'X' or 'O')
 # Return the selected move (a tuple (x,y) with each position between 
 #   1 and 4)
 
+def predefined_moves(board,player):
+    Xnum = len([i for (i,e) in enumerate(board) if e == 'X'])
+    Onum = len([i for (i,e) in enumerate(board) if e == 'O'])
+    if Onum == Xnum:
+        return offense(board,player)
+    else:
+        return defense(board,player)
+
+def offense(board,player):
+    opp = other(player)
+    if opp == 'X':
+        enemy = xPos(board)
+        mark = oPos(board)
+    else:
+        enemy = oPos(board)
+        mark = xPos(board)
+    pieces = len(possible_moves(board))
+    if pieces == 16:
+        return (0,5)
+    elif pieces == 14:
+        mark = mark[0]
+        no_opp = False
+        for i in neighbor(mark):
+            for j in neighbor(i):
+                if board[j] == opp:
+                    no_opp = False
+                    break
+                else:
+                    no_opp =True
+            if no_opp == True:
+                return (0,i)
+    elif pieces == 12:
+        for positions in WIN_SEQUENCES:
+            s = sum(MARK_VALUE[board[pos]] for pos in positions)
+            if player == 'X' and s == 20 or player == 'O' and s == 2:
+                for move in positions:
+                    if move not in mark:
+                        for i in neighbor(move):
+                            if opp == board[i]:
+                                return (0,move)
+                return (0,[move for move in positions if move not in mark][0])
+            else:
+                for i in CENTER:
+                    if board[i] == ' ':
+                        return (0,i)
+
+
+
+def defense(board,player):
+    opp = other(player)
+    if opp == 'X':
+        enemy = xPos(board)
+    else:
+        enemy = oPos(board)
+    pieces = len(possible_moves(board))
+    if pieces == 15:
+        if enemy[0] == 0:
+            return (0,5)
+        elif enemy[0] == 3:
+            return (0,6)
+        elif enemy[0] == 12:
+            return (0,9)
+        elif enemy[0] == 15:
+            return (0,10)
+        elif enemy[0] in [1,4,5]:
+            return (0,0)
+        elif enemy[0] in [2,6,7]:
+            return (0,3)
+        elif enemy[0] in [8,9,13]:
+            return (0,12)
+        elif enemy[0] in [10,11,14]:
+            return (0,15)
+    elif pieces == 13 or pieces == 11:
+        for positions in WIN_SEQUENCES:
+            s = sum(MARK_VALUE[board[pos]] for pos in positions)
+            if opp == 'X' and s == 20 or opp == 'O' and s == 2:
+                for move in positions:
+                    if move not in enemy:
+                        for i in neighbor(move):
+                            if player == board[i]:
+                                return (0,move)
+                return (0,[move for move in positions if move not in enemy][0])
+            else:
+                for i in CENTER:
+                    if board[i] == ' ':
+                        return (0,i)
+
+        
+
+
+
+
+
 def computer_move (board,player,window):
+    if len(possible_moves(board)) >= 11:
+        return predefined_moves(board,player)
+
     bestMove = []
     if player == 'O':
         for i in possible_moves(board):
