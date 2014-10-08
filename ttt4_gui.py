@@ -1,13 +1,28 @@
 #!/usr/bin/env python
 # 
-
+#
 #
 # Game Programming, Level 2 Project
 #
 # TIC-TAC-TOE 4
+# Jack Fan
+# Jacob Riedel
 #
 # A simple strategy game, an extension of the standard 3x3 tic-tac-toe
 #
+# We tested the minimax and found out that when there are six pieces on the board,
+# the waiting time is around 1 min which is acceptable.
+# We decided to write some predetermined sequences of moves as look up for the AI.
+# Note that the first six moves are extremely fast, and then minimax takes over.
+# We used a 1D array rather than a 2D array to represent the board.
+# We also added a "neighbor" function that returns the list of neighbor positions.
+# This is useful in the predetermined sequences of moves.
+
+# The strategy the AI uses for the predetermined sequence depends on whether it 
+# goes first or second. If it goes first, it utilizes the "offense" function and the
+# "defense" function otherwise. The reason we chose this approach is because there is 
+# no guaranteed win sequence of moves in the first 6 moves. Theoretically, we can
+# randomly choose 6 positions and still guarantee a draw.
 
 import sys
 from graphics import *
@@ -40,9 +55,9 @@ CORNER = {0,3,12,15}
 SIDE = {1,2,4,7,8,11,13,14}
 CENTER = {5,6,9,10}
 
-def create_board (str='................'):
+def create_board (string='................'):
     board = []
-    for i in str:
+    for i in string:
         if i == '.':
             board.append(' ')
         else:
@@ -59,23 +74,11 @@ def create_board (str='................'):
     #   that would never arise in legal play starting from an empty
     #   board
     # return board
-# Take a board representation and checks if there's a mark at
-#    position x, y (each between 1 and 4)
-# Return 'X' or 'O' if there is a mark
-# Return False if there is not
-def has_mark (board,pos):
-    # if board[pos] == 'O'
-    #     return 'O'
-    # elif board[pos] == 'X'
-    #     return 'X'
-    # else:
-    #     return ' '
-    return None
+
 
 # Check if a board is a win for X or for O.
 # Return 'X' if it is a win for X, 'O' if it is a win for O,
 # and False otherwise
-
 def has_win (board):
     for positions in WIN_SEQUENCES:
         s = sum(MARK_VALUE[board[pos]] for pos in positions)
@@ -86,12 +89,15 @@ def has_win (board):
     return False
 
 # Check if the board is done, either because it is a win or a draw
-
 def done (board):
     return (has_win(board) or not [ e for e in board if (e == ' ')])
 
 def print_board (board):
     for i in range(4):
+        if i*4 == 12:
+            sys.stdout.write(str(i*4) + ' |')
+        else:
+            sys.stdout.write(str(i*4) + '  |')
         for k in range(4):
             sys.stdout.write('  ')
             if board[i*4+k] == ' ':
@@ -103,8 +109,7 @@ def print_board (board):
 
 
 # Read player input when playing as 'player' (either 'X' or 'O')
-# Return a move (a tuple (x,y) with each position between 1 and 4)
-
+# Return a move (an integer)
 def read_player_input (board,player,window):
     valid = [ i for (i,e) in enumerate(board) if e == ' ']
     while True:
@@ -114,6 +119,7 @@ def read_player_input (board,player,window):
         if len(move)>0 and int(move) in valid:
             return int(move)
 
+# return a new board with a move made by a player
 def make_move (board,move,mark):
     new_board = board[:]
     new_board[move] = mark
@@ -131,18 +137,15 @@ def xPos (board):
 def oPos (board):
     return [i for (i,e) in enumerate(board) if e == 'O']
 
+# return a list of neighbor positions of the specified position
 def neighbor (mark):
     neighbor=[]
     neighbor.extend([i for i in [mark+4,mark-4] if i >= 0 and i <= 15])
     neighbor.extend([i for i in [mark+1,mark-1] if i >= 0 and i <= 15 and i/4==mark/4])
     return neighbor
 
-    
-# Select a move for the computer, when playing as 'player' (either 
-#   'X' or 'O')
-# Return the selected move (a tuple (x,y) with each position between 
-#   1 and 4)
-
+# runs in place of minimax in the first six moves of the game
+# redirect to either offense() or defense()
 def predefined_moves(board,player):
     Xnum = len([i for (i,e) in enumerate(board) if e == 'X'])
     Onum = len([i for (i,e) in enumerate(board) if e == 'O'])
@@ -151,6 +154,8 @@ def predefined_moves(board,player):
     else:
         return defense(board,player)
 
+# the strategy the computer uses for the first six moves of the game if it made the
+# first move
 def offense(board,player):
     opp = other(player)
     if opp == 'X':
@@ -190,7 +195,8 @@ def offense(board,player):
                         return (0,i)
 
 
-
+# the strategy the computer uses for the first six moves of the game if it made the
+# second move
 def defense(board,player):
     opp = other(player)
     if opp == 'X':
@@ -235,7 +241,8 @@ def defense(board,player):
 
 
 
-
+# Select a move for the computer, when playing as 'player' (either 
+#   'X' or 'O')
 def computer_move (board,player,window):
     if len(possible_moves(board)) >= 11:
         return predefined_moves(board,player)
@@ -278,6 +285,7 @@ def other (player):
         return 'O'
     return 'X'
 
+# GUI initialization
 def gui_init (board):
     window = GraphWin('Tic-Tac-Toe 4x4', GRIDSIZE*4, GRIDSIZE*4)
     for i in range(1,4):
@@ -286,6 +294,7 @@ def gui_init (board):
     window.setBackground('white')
     return window
 
+# draws on the GUI
 def draw_board (board, window):
     for i in range(4):
         for k in range(4):
@@ -302,6 +311,7 @@ def draw_board (board, window):
                 O.setTextColor('red')
                 O.draw(window)
 
+# GUI mouse interactions
 def wait_player_input (board,player,window):
     while True:
         valid = [ i for (i,e) in enumerate(board) if e == ' ']
@@ -310,6 +320,7 @@ def wait_player_input (board,player,window):
         if move in valid:
             return move
 
+# draws the ending texts on the GUI
 def ending(winner,window):
     if winner != False:
         text = Text(Point(GRIDSIZE*2,GRIDSIZE*2), winner + ' has won the game!\n Press anywhere to exit.')
@@ -322,9 +333,9 @@ def ending(winner,window):
     window.close()
 
 
-def run (str,player,playX,playO): 
+def run (string,player,playX,playO): 
 
-    board = create_board(str)
+    board = create_board(string)
     window = gui_init(board)
     draw_board(board,window)
     print_board(board)
@@ -340,6 +351,7 @@ def run (str,player,playX,playO):
         board = make_move(board,move,player)
         draw_board(board, window)
         print_board(board)
+        print player,'chose',move
         player = other(player)
 
     winner = has_win(board)
@@ -365,13 +377,13 @@ PLAYER_MAP = {
 
 if __name__ == '__main__':
     try:
-        str = sys.argv[1] if len(sys.argv)>1 else '.' * 16
+        string = sys.argv[1] if len(sys.argv)>1 else '.' * 16
         player = sys.argv[2] if len(sys.argv)>3 else 'X'
         playX = PLAYER_MAP[sys.argv[3]] if len(sys.argv)>3 else wait_player_input
         playO = PLAYER_MAP[sys.argv[4]] if len(sys.argv)>4 else computer_move
     except:
         print 'Usage: %s [starting board] [X|O] [human|computer] [human|computer]' % (sys.argv[0])
         exit(1)
-    run(str,player,playX,playO)
+    run(string,player,playX,playO)
 
 
